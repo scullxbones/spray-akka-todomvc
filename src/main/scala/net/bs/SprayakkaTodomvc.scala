@@ -4,34 +4,45 @@ import akka.actor._
 import akka.pattern.ask
 import scala.concurrent.duration._
 import akka.util.Timeout
+import akka.event.Logging._
+import spray.routing.SimpleRoutingApp
+import spray.routing._
+import Directives._
+import spray.routing.directives.LoggingMagnet._
 
-case object Tick
-case object Get
-
-class Counter extends Actor {
-  var count = 0
-
-  def receive = {
-    case Tick => count += 1
-    case Get  => sender ! count
+object SprayAkkaTodoMVC extends App with SimpleRoutingApp {
+  startServer(interface = "localhost", port = 8080) {
+    path("hello") {
+      get {
+        complete {
+          <h1>Say hello to spray</h1>
+        }
+      }
+    } ~ 
+    get {
+      logRequestResponse(("public",DebugLevel)) {
+    	  getFromResourceDirectory("public") //."+_.request.path.replaceAllLiterally("/","."))
+      }
+//    	getServletResource("public")
+    }
   }
-}
-
-object SprayakkaTodomvc extends App {
-  val system = ActorSystem("SprayakkaTodomvc")
-  implicit val ec = system.dispatcher
-
-  val counter = system.actorOf(Props[Counter])
-
-  counter ! Tick
-  counter ! Tick
-  counter ! Tick
-
-  implicit val timeout = Timeout(5.seconds)
-
-  (counter ? Get) onSuccess {
-    case count => println("Count is " + count)
-  }
-
-  system.shutdown()
+  
+//  def getServletResource(relativePath: String) = {
+//      get { 
+//        detach {
+//          val path = "/" + relativePath
+//          val stream = CaptureContext.context.get.getResourceAsStream(path)
+//          if (stream == null) {
+//            reject()
+//          } else {
+//            val ext = path.split('.').last
+//            val contentType = ContentType(MediaTypes.forExtension(ext) getOrElse `text/plain`)
+//            val buffer = bytesFromStream(stream)
+//            stream.close()
+//            val content = HttpContent(contentType, buffer)
+//            completeWith(content)
+//          }
+//        }
+//      }
+//    }
 }
