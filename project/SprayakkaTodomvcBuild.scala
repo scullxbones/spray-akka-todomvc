@@ -25,8 +25,11 @@ object SprayakkaTodomvcBuild extends Build {
 		  "io.spray" % "spray-can" % "1.1-20130207",
 		  "io.spray" % "spray-routing" % "1.1-20130207",
 		  "io.spray" %%  "spray-json" % "1.2.3",
+		  "com.typesafe.slick" %% "slick" % "1.0.0",
+		  "com.h2database" % "h2" % "1.3.170",
 		  "com.typesafe.akka" %% "akka-testkit" % "2.1.0" % "test",
-		  "org.scalacheck" %% "scalacheck" % "1.10.0" % "test"
+		  "org.scalatest" %% "scalatest" % "1.9.1" % "test",
+		  "junit" % "junit" % "4.11" % "test"
       )
     )
   )

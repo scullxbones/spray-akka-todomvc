@@ -23,26 +23,8 @@ object SprayAkkaTodoMVC extends App with SimpleRoutingApp {
       logRequestResponse(("public",DebugLevel)) {
     	  getFromResourceDirectory("public") //."+_.request.path.replaceAllLiterally("/","."))
       }
-//    	getServletResource("public")
+
     }
   }
   
-//  def getServletResource(relativePath: String) = {
-//      get { 
-//        detach {
-//          val path = "/" + relativePath
-//          val stream = CaptureContext.context.get.getResourceAsStream(path)
-//          if (stream == null) {
-//            reject()
-//          } else {
-//            val ext = path.split('.').last
-//            val contentType = ContentType(MediaTypes.forExtension(ext) getOrElse `text/plain`)
-//            val buffer = bytesFromStream(stream)
-//            stream.close()
-//            val content = HttpContent(contentType, buffer)
-//            completeWith(content)
-//          }
-//        }
-//      }
-//    }
 }

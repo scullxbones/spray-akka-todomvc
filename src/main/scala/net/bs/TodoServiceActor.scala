@@ -4,6 +4,9 @@ import spray.routing.HttpService
 import spray.http._
 import MediaTypes._
 import akka.actor.Actor
+import spray.routing._
+import spray.routing.directives._
+import Directives._
 
 class TodoServiceActor extends Actor with TodoService {
 
@@ -20,12 +23,26 @@ class TodoServiceActor extends Actor with TodoService {
 trait TodoService extends HttpService {
 
   val todoRoute = {
-    get {
-      path("") {
-        respondWithMediaType(`text/html`) { 
-          complete("<html><body>Todo</body></html>")
-        }
-      }
+    pathPrefix("api") {
+    	path("todo" / "\\w+".r) { id =>
+    	  get {
+    	    complete("SHOW (GET) received for id = "+id)
+    	  } ~
+    	  put {
+    	    complete("UPDATE (PUT) received for id = "+id)
+    	  } ~
+    	  delete {
+    	    complete("DELETE (DELETE) received for id = "+id)
+    	  }
+    	} ~
+	    path("todo") {
+	      get {
+	          complete("LIST (GET) received")
+	      } ~
+	      post {
+	        complete ("CREATE (POST) received")
+	      }
+	    }
     } ~
     getFromResourceDirectory("public")
   }
