@@ -29,6 +29,7 @@ object SprayakkaTodomvcBuild extends Build {
 		  "com.h2database" % "h2" % "1.3.170",
 		  "com.typesafe.akka" %% "akka-testkit" % "2.1.0" % "test",
 		  "org.scalatest" %% "scalatest" % "1.9.1" % "test",
+		  "org.mockito" % "mockito-all" % "1.9.5" % "test",
 		  "junit" % "junit" % "4.11" % "test"
       )
     )

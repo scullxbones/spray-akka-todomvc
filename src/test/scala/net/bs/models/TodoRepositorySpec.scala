@@ -29,15 +29,15 @@ class TodoRepositorySpec extends FunSpec with ShouldMatchers with BeforeAndAfter
 	  
 	  it("should be able to create itself on an empty database") {
 	    run { implicit session: Session =>
-	      val todo = Todos.create(new Todo(None, "test", false))
+	      val todo = create(new Todo(None, "test", false))
 	      // No error thrown = success ?
 	    }
 	  }
 
 	  it("should be able to insert a new Todo object and generate a key") {
 	    run { implicit session: Session =>
-	      val todo = Todos.create(new Todo(None, "test", false))
-	      val retrieved = Todos.show(todo)
+	      val todo = create(new Todo(None, "test", false))
+	      val retrieved = show(todo)
 	      assert(retrieved.isDefined,retrieved)
 	    }
 	  }
@@ -45,8 +45,8 @@ class TodoRepositorySpec extends FunSpec with ShouldMatchers with BeforeAndAfter
 	  it("should return a Some[Todo] option for a key that already exists") {
 	    run { implicit session: Session =>
 	      val toSave = new Todo(None, "test", false)
-	      val todo = Todos.create(toSave)
-	      val retrieved = Todos.show(todo)
+	      val todo = create(toSave)
+	      val retrieved = show(todo)
 	      assert(Some(toSave) === retrieved)
 	    }
 	  }
@@ -54,8 +54,8 @@ class TodoRepositorySpec extends FunSpec with ShouldMatchers with BeforeAndAfter
 	  it("should return a None option for a key that does not exist") {
 	    run { implicit session: Session =>
 	      val toSave = new Todo(None, "test", false)
-	      val todo = Todos.create(toSave)
-	      val retrieved = Todos.show("does not exist")
+	      val todo = create(toSave)
+	      val retrieved = show("does not exist")
 	      assert(None === retrieved)
 	    }
 	  }
@@ -63,28 +63,28 @@ class TodoRepositorySpec extends FunSpec with ShouldMatchers with BeforeAndAfter
 	  it("should be able to list all todo objects in the database") {
 	    run { implicit session: Session =>
 	      val todos = List(new Todo(None, "test", false),new Todo(None, "test2", false),new Todo(None, "test3", false))
-	      val ids = todos.map( t => Todos.create(t) )
-	      val retrieved = Todos.list()
+	      val ids = todos.map( t => create(t) )
+	      val retrieved = list()
 	      assert(3 === retrieved.size)
 	    }
 	  }
 	  
 	  it("should be able to create a new todo object") {
 	    run { implicit session: Session =>
-	      val todo = Todos.create(new Todo(None, "test", false))
-	      val retrieved = Todos.show(todo)
+	      val todo = create(new Todo(None, "test", false))
+	      val retrieved = show(todo)
 	      assert(retrieved.isDefined,retrieved)
 	    }
 	  }
 	  
 	  it("should be able to update an existing todo object") {
 	    run { implicit session: Session =>
-	      val todo = Todos.create(new Todo(None, "test", false))
-	      Todos.show(todo) match {
+	      val todo = create(new Todo(None, "test", false))
+	      show(todo) match {
 	        case Some(t) => {
 	          val updated = new Todo(t.id, "updated title", true)
-	          Todos.update(updated)
-		      val retrieved = Todos.show(t.id.get)
+	          update(updated)
+		      val retrieved = show(t.id.get)
 		      assert(retrieved.isDefined,retrieved)
 		      assert("updated title" === retrieved.get.title)
 		      assert(true === retrieved.get.completed)
@@ -96,11 +96,11 @@ class TodoRepositorySpec extends FunSpec with ShouldMatchers with BeforeAndAfter
 	  
 	  it("should be able to delete an existing todo object") {
 	    run { implicit session: Session =>
-	      val todo = Todos.create(new Todo(None, "test", false))
-	      Todos.show(todo) match {
+	      val todo = create(new Todo(None, "test", false))
+	      show(todo) match {
 	        case Some(t) => {
-	          Todos.delete(t.id.get)
-	          assert(None === Todos.show(todo))
+	          delete(t.id.get)
+	          assert(None === show(todo))
 	        }
 	        case None => throw new Exception("Couldn't find object")
 	      }

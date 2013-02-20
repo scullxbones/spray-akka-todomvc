@@ -21,34 +21,35 @@ trait TodoComponent { this: Profile =>
 	  def title = column[String]("title")
 	  def completed = column[Boolean]("completed")
 	  def * = id.? ~ title ~ completed <> (Todo, Todo.unapply _)
-
-	  def show(id: String)(implicit session: Session): Option[Todo] = {
-	    val q = Query(Todos).filter(_.id === id)
-	    q.firstOption()
-	  }
-	  
-	  def update(todo: Todo)(implicit session: Session) = {
-	    val q = for {
-	      t <- Todos if t.id === todo.id.get
-	    } yield (t.title ~ t.completed)
-	    q.update(todo.title,todo.completed)
-	  }
-	  
-	  def delete(id: String)(implicit session: Session) = {
-	    val q = Query(Todos).filter(_.id === id)
-	    q.delete
-	  }
-	  
-	  def list()(implicit session: Session): List[Todo] = {
-	    val q = Query(Todos)
-	    q.list()
-	  }
-	  
-	  def create(todo: Todo)(implicit session: Session): String = {
-	    Todos.insert(todo)
-	    todo.id.get
-	  } 
+	}
+  
+  def show(id: String)(implicit session: Session): Option[Todo] = {
+    val q = Query(Todos).filter(_.id === id)
+    q.firstOption()
   }
+  
+  def update(todo: Todo)(implicit session: Session) = {
+    val q = for {
+      t <- Todos if t.id === todo.id.get
+    } yield (t.title ~ t.completed)
+    q.update(todo.title,todo.completed)
+  }
+  
+  def delete(id: String)(implicit session: Session) = {
+    val q = Query(Todos).filter(_.id === id)
+    q.delete
+  }
+  
+  def list()(implicit session: Session): List[Todo] = {
+    val q = Query(Todos)
+    q.list()
+  }
+  
+  def create(todo: Todo)(implicit session: Session): String = {
+    Todos.insert(todo)
+    todo.id.get
+  } 
+  
 }
 
 
