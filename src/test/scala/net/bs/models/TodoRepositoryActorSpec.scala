@@ -46,8 +46,8 @@ class TodoRepositoryActorSpec extends FunSpec with ShouldMatchers with MockitoSu
       actualOne.onSuccess(_ match {
         case m: ShowResponse => {
          m.todo match {
-           case Right(Some(todo)) => Some("1") should equal (todo.id)
-           case Right(None) => fail("Expected to find todo")
+           case Some(todo) => Some("1") should equal (todo.id)
+           case None => fail("Expected to find todo")
          }  
         }
       })
@@ -56,8 +56,8 @@ class TodoRepositoryActorSpec extends FunSpec with ShouldMatchers with MockitoSu
       actualTwo.onSuccess(_ match {
         case m: ShowResponse => {
           m.todo match {
-            case Right(Some(_)) =>fail("Expected not to find todo")
-            case Right(None) => // Success
+            case Some(_) =>fail("Expected not to find todo")
+            case None => // Success
           }
         }
       })
@@ -80,8 +80,8 @@ class TodoRepositoryActorSpec extends FunSpec with ShouldMatchers with MockitoSu
     	val actual = actorRef ? CreateMessage(todo)
     	actual.onSuccess(_ match {
     	  case m:CreateResponse => m.response match {
-    	    case Left(_) => fail("Expected success")
-    	    case Right(id) => "one" should equal(id)
+    	    case id:String => "one" should equal(id)
+    	    case _ => fail("Expected success")
     	  }
     	})
     }
@@ -93,8 +93,8 @@ class TodoRepositoryActorSpec extends FunSpec with ShouldMatchers with MockitoSu
     	val actual = actorRef ? UpdateMessage(todo)
     	actual.onSuccess(_ match {
     	  case m:UpdateResponse => m.response match {
-    	    case Left(_) => fail("Expected success")
-    	    case Right(cnt) => 1 should equal(cnt)
+    	    case cnt:Int => 1 should equal(cnt)
+    	    case _ => fail("Expected success")
     	  }
     	})
     }
@@ -106,8 +106,8 @@ class TodoRepositoryActorSpec extends FunSpec with ShouldMatchers with MockitoSu
     	val actual = actorRef ? DeleteMessage("one")
     	actual.onSuccess(_ match {
     	  case m:UpdateResponse => m.response match {
-    	    case Left(_) => fail("Expected success")
-    	    case Right(cnt) => 11 should equal(cnt)
+    	    case cnt:Int => 11 should equal(cnt)
+    	    case _ => fail("Expected success")
     	  }
     	})
     }
