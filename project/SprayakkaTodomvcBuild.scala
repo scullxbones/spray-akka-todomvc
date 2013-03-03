@@ -1,15 +1,17 @@
 import sbt._
 import sbt.Keys._
+import com.typesafe.sbt.SbtStartScript
 
 object SprayakkaTodomvcBuild extends Build {
 
   lazy val sprayakkaTodomvc = Project(
     id = "spray-akka-todomvc",
     base = file("."),
-    settings = Project.defaultSettings ++ Seq(
+    settings = Project.defaultSettings ++ SbtStartScript.startScriptForClassesSettings ++ Seq(
       name := "Spray-Akka TodoMVCs",
       organization := "net.bs",
       version := "0.1-SNAPSHOT",
+      mainClass in (Compile, run) := Some("net.bs.Boot"),
       scalaVersion := "2.10.0",
       scalacOptions ++= Seq("-feature", "-deprecation"),
 
