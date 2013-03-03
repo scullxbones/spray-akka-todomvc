@@ -45,9 +45,9 @@ trait TodoComponent { this: Profile =>
     q.list()
   }
   
-  def create(todo: Todo)(implicit session: Session): String = {
+  def create(todo: Todo)(implicit session: Session): Todo = {
     Todos.insert(todo)
-    todo.id.get
+    todo
   } 
   
 }

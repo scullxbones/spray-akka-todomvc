@@ -37,7 +37,7 @@ class TodoRepositorySpec extends FunSpec with ShouldMatchers with BeforeAndAfter
 	  it("should be able to insert a new Todo object and generate a key") {
 	    run { implicit session: Session =>
 	      val todo = create(new Todo(None, "test", false))
-	      val retrieved = show(todo)
+	      val retrieved = show(todo.id.get)
 	      assert(retrieved.isDefined,retrieved)
 	    }
 	  }
@@ -46,7 +46,7 @@ class TodoRepositorySpec extends FunSpec with ShouldMatchers with BeforeAndAfter
 	    run { implicit session: Session =>
 	      val toSave = new Todo(None, "test", false)
 	      val todo = create(toSave)
-	      val retrieved = show(todo)
+	      val retrieved = show(todo.id.get)
 	      assert(Some(toSave) === retrieved)
 	    }
 	  }
@@ -72,7 +72,7 @@ class TodoRepositorySpec extends FunSpec with ShouldMatchers with BeforeAndAfter
 	  it("should be able to create a new todo object") {
 	    run { implicit session: Session =>
 	      val todo = create(new Todo(None, "test", false))
-	      val retrieved = show(todo)
+	      val retrieved = show(todo.id.get)
 	      assert(retrieved.isDefined,retrieved)
 	    }
 	  }
@@ -80,7 +80,7 @@ class TodoRepositorySpec extends FunSpec with ShouldMatchers with BeforeAndAfter
 	  it("should be able to update an existing todo object") {
 	    run { implicit session: Session =>
 	      val todo = create(new Todo(None, "test", false))
-	      show(todo) match {
+	      show(todo.id.get) match {
 	        case Some(t) => {
 	          val updated = new Todo(t.id, "updated title", true)
 	          update(updated)
@@ -97,10 +97,10 @@ class TodoRepositorySpec extends FunSpec with ShouldMatchers with BeforeAndAfter
 	  it("should be able to delete an existing todo object") {
 	    run { implicit session: Session =>
 	      val todo = create(new Todo(None, "test", false))
-	      show(todo) match {
+	      show(todo.id.get) match {
 	        case Some(t) => {
 	          delete(t.id.get)
-	          assert(None === show(todo))
+	          assert(None === show(todo.id.get))
 	        }
 	        case None => throw new Exception("Couldn't find object")
 	      }

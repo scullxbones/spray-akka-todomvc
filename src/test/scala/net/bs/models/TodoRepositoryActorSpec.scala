@@ -75,12 +75,12 @@ class TodoRepositoryActorSpec extends FunSpec with ShouldMatchers with MockitoSu
     
     it ("Should respond to a create request with the created key") {
     	val todo = Todo(None, "title", true)
-    	when(repoMock.create(todo)).thenReturn("one")
+    	when(repoMock.create(todo)).thenReturn(todo.copy(id=Some("one")))
     	
     	val actual = actorRef ? CreateMessage(todo)
     	actual.onSuccess(_ match {
-    	  case m:CreateResponse => m.response match {
-    	    case id:String => "one" should equal(id)
+    	  case m:CreateResponse => m.todo match {
+    	    case todo:Todo => "one" should equal(todo.id.get)
     	    case _ => fail("Expected success")
     	  }
     	})
@@ -94,7 +94,6 @@ class TodoRepositoryActorSpec extends FunSpec with ShouldMatchers with MockitoSu
     	actual.onSuccess(_ match {
     	  case m:UpdateResponse => m.response match {
     	    case cnt:Int => 1 should equal(cnt)
-    	    case _ => fail("Expected success")
     	  }
     	})
     }
@@ -107,7 +106,6 @@ class TodoRepositoryActorSpec extends FunSpec with ShouldMatchers with MockitoSu
     	actual.onSuccess(_ match {
     	  case m:UpdateResponse => m.response match {
     	    case cnt:Int => 11 should equal(cnt)
-    	    case _ => fail("Expected success")
     	  }
     	})
     }
