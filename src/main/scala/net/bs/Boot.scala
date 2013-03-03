@@ -21,9 +21,9 @@ object Boot extends App with SprayCanHttpServerApp {
     case Some(url) => {
 	    val dbUri = new URI(url)
 	
-	    val dbUrl = dbUri.getUserInfo().split(":") match {
+	    dbUri.getUserInfo().split(":") match {
 	      case Array(user,pass) => {
-	        val urlStr = "jdbc:postgresql://%s:%s/%s".format(dbUri.getHost(),dbUri.getPort(),dbUri.getPath())
+	        val urlStr = "jdbc:postgresql://%s:%s%s".format(dbUri.getHost(),dbUri.getPort(),dbUri.getPath())
 	        (Database.forURL(urlStr, driver = "org.postgresql.Driver", user = user, password = pass), PostgresDriver)
 	      }
 	      case _ => throw new IllegalArgumentException("Unrecognized url (too many colons): "+url)
@@ -36,8 +36,12 @@ object Boot extends App with SprayCanHttpServerApp {
 
   // create repo
   val repo = new TodoRepository(driver)
-  db.withSession { implicit session: Session =>
-  	repo.create
+  driver match {
+    case _: H2Driver => {
+	  db.withSession { implicit session: Session =>
+	  	repo.create
+	  }
+    }
   }
   
   // create child repo actor
