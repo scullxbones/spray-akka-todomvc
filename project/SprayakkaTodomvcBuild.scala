@@ -14,7 +14,7 @@ object SprayakkaTodomvcBuild extends Build {
       mainClass in (Compile, run) := Some("net.bs.Boot"),
       scalaVersion := "2.10.0",
       scalacOptions ++= Seq("-feature", "-deprecation"),
-
+      unmanagedResourceDirectories in Compile += file("src/main/webapp"),
 		resolvers ++= Seq(
 		  "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases",
 		  "Sonatype Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",

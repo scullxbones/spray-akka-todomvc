@@ -15,7 +15,7 @@ object Boot extends App with SprayCanHttpServerApp {
   
   val host = "0.0.0.0"
     
-  val port = Option(System.getenv("http.port")).getOrElse("8080").toInt
+  val port = Option(System.getenv("PORT")).getOrElse("8080").toInt
   
   implicit val (db :Database,driver: ExtendedProfile) = Option(System.getenv("DATABASE_URL")) match {
     case Some(url) => {
