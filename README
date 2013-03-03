@@ -6,11 +6,11 @@ Demo Backbone.js TODO MVC application backed by RESTful Spray/Akka/Slick stack.
   * Supports in-memory H2 in dev mode or PGSQL in cloud mode
   * Uses bulkhead actor for database I/O
   * Fully asynchronous restful services
+  * Packaged for deployment to heroku using sbt start-script plugin
 
 To run and test it using SBT invoke: 'sbt run'
 
 Future work:
-  * Package for deployment to heroku using sbt assembly and sbt start-script plugins
   * Fix POST where id already exists - should be 303 See Other
   * Add travis CI
   * Convert to multi-tenant
