@@ -42,6 +42,7 @@ object Boot extends App with SprayCanHttpServerApp {
 	  	repo.create
 	  }
     }
+    case _ => 
   }
   
   // create child repo actor
