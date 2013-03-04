@@ -18,7 +18,7 @@ case class UpdateMessage(todo: Todo) extends CommandMessage
 case class CreateMessage(todo: Todo) extends CommandMessage
 case class DeleteMessage(id: String) extends CommandMessage
 case class UpdateResponse(response: Int) extends CommandMessage
-case class CreateResponse(todo: Todo) extends CommandMessage
+case class CreateResponse(todoOrId: Either[String,Todo]) extends CommandMessage
 
 class TodoRepositoryActor(repo: TodoComponent)(implicit database: Database) extends Actor with ActorLogging {
 

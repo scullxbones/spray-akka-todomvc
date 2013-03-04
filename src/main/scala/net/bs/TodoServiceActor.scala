@@ -130,8 +130,13 @@ trait TodoService extends HttpService {
 		    	      ask(repoActor, CreateMessage(todo))
 		    	      	.mapTo[CreateResponse]
 		    	        .onComplete {
-			    	        case Success(resp) => 
-		    	        	  ctx.complete(Created, List(Location("%s/%s".format(ctx.request.uri,resp.todo.id.get))), resp.todo)
+			    	        case Success(resp) =>
+			    	          resp.todoOrId match {
+			    	            case Left(id) => 
+			    	              ctx.redirect("%s/%s".format(ctx.request.uri,id),SeeOther)
+			    	            case Right(todo) => 
+			    	              ctx.complete(Created, List(Location("%s/%s".format(ctx.request.uri,todo.id.get))), todo)
+			    	          }
 				            case Failure(e) =>
 				              logAndFail(ctx,e)
 		    	      	}

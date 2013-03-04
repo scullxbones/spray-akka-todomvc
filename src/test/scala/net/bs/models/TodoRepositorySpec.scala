@@ -36,18 +36,27 @@ class TodoRepositorySpec extends FunSpec with ShouldMatchers with BeforeAndAfter
 
 	  it("should be able to insert a new Todo object and generate a key") {
 	    run { implicit session: Session =>
-	      val todo = create(new Todo(None, "test", false))
-	      val retrieved = show(todo.id.get)
-	      assert(retrieved.isDefined,retrieved)
+	      val todoOrId = create(new Todo(None, "test", false))
+	      todoOrId match {
+	        case Right(retrieved) => {
+	          val todo = show(retrieved.id.get)
+	          assert(todo.isDefined,todo.get)
+	        }
+	      }
+	     
 	    }
 	  }
 	  
 	  it("should return a Some[Todo] option for a key that already exists") {
 	    run { implicit session: Session =>
 	      val toSave = new Todo(None, "test", false)
-	      val todo = create(toSave)
-	      val retrieved = show(todo.id.get)
-	      assert(Some(toSave) === retrieved)
+	      val todoOrId = create(toSave)
+	      todoOrId match {
+	        case Right(todo) => {
+	          val retrieved = show(todo.id.get)
+		      assert(Some(toSave) === retrieved)
+	        }
+	      }
 	    }
 	  }
 	  
@@ -71,38 +80,49 @@ class TodoRepositorySpec extends FunSpec with ShouldMatchers with BeforeAndAfter
 	  
 	  it("should be able to create a new todo object") {
 	    run { implicit session: Session =>
-	      val todo = create(new Todo(None, "test", false))
-	      val retrieved = show(todo.id.get)
-	      assert(retrieved.isDefined,retrieved)
+	      val todoOrId = create(new Todo(None, "test", false))
+	      todoOrId match {
+	        case Right(todo) => {
+		      val retrieved = show(todo.id.get)
+		      assert(retrieved.isDefined,retrieved)
+	        }
+	      }
 	    }
 	  }
 	  
 	  it("should be able to update an existing todo object") {
 	    run { implicit session: Session =>
-	      val todo = create(new Todo(None, "test", false))
-	      show(todo.id.get) match {
-	        case Some(t) => {
-	          val updated = new Todo(t.id, "updated title", true)
-	          update(updated)
-		      val retrieved = show(t.id.get)
-		      assert(retrieved.isDefined,retrieved)
-		      assert("updated title" === retrieved.get.title)
-		      assert(true === retrieved.get.completed)
+	      val todoOrId = create(new Todo(None, "test", false))
+	      todoOrId match {
+	        case Right(todo) => {
+		      show(todo.id.get) match {
+		        case Some(t) => {
+		          val updated = new Todo(t.id, "updated title", true)
+		          update(updated)
+			      val retrieved = show(t.id.get)
+			      assert(retrieved.isDefined,retrieved)
+			      assert("updated title" === retrieved.get.title)
+			      assert(true === retrieved.get.completed)
+		        }
+		        case None => throw new Exception("Couldn't find object")
+		      }
 	        }
-	        case None => throw new Exception("Couldn't find object")
 	      }
 	    }
 	  }
 	  
 	  it("should be able to delete an existing todo object") {
 	    run { implicit session: Session =>
-	      val todo = create(new Todo(None, "test", false))
-	      show(todo.id.get) match {
-	        case Some(t) => {
-	          delete(t.id.get)
-	          assert(None === show(todo.id.get))
-	        }
-	        case None => throw new Exception("Couldn't find object")
+	      val todoOrId = create(new Todo(None, "test", false))
+	      todoOrId match {
+	        case Right(todo) =>
+		      show(todo.id.get) match {
+		        case Some(t) => {
+		          delete(t.id.get)
+		          assert(None === show(todo.id.get))
+		        }
+		        case None => throw new Exception("Couldn't find object")
+		      }
 	      }
 	    }
 	  }

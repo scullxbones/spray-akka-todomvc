@@ -45,9 +45,12 @@ trait TodoComponent { this: Profile =>
     q.list()
   }
   
-  def create(todo: Todo)(implicit session: Session): Todo = {
-    Todos.insert(todo)
-    todo
+  def create(todo: Todo)(implicit session: Session): Either[String,Todo] = {
+    val q = Query(Todos).filter(_.id === todo.id.get)
+    q.firstOption match {
+      case None => Todos.insert(todo); Right(todo)
+      case Some(existing) => Left(existing.id.get)
+    }
   } 
   
 }

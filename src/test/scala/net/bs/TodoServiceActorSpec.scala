@@ -36,6 +36,7 @@ class TodoServiceActorSpec extends FunSpec with ShouldMatchers with ScalatestRou
 		        case ShowMessage(id) => sender ! new ShowResponse(Some(Todo(Some(id),"title",false))) 
 		        case UpdateMessage(_) | DeleteMessage(_) => sender ! new UpdateResponse(1)
 		        case _:ListMessage => sender ! new ListResponse(List(Todo(Some("TEST"),"title2",false)))
+		        case _:CreateMessage => sender ! new CreateResponse(Left("TEST"))
 		      }
 		    }
 		))
@@ -46,7 +47,7 @@ class TodoServiceActorSpec extends FunSpec with ShouldMatchers with ScalatestRou
 		        case _:ShowMessage => sender ! new ShowResponse(None) 
 		        case _:UpdateMessage | _:DeleteMessage => sender ! new UpdateResponse(0)
 		        case _:ListMessage => sender ! new ListResponse(List.empty)
-		        case CreateMessage(todo) => sender ! new CreateResponse(todo.copy(id = Some("TEST")))
+		        case CreateMessage(todo) => sender ! new CreateResponse(Right(todo.copy(id = Some("TEST"))))
 		      }
 		    }
 		))
