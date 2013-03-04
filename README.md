@@ -1,5 +1,7 @@
 Demo Backbone.js TODO MVC application backed by RESTful Spray/Akka/Slick stack.
 
+Travis CI says: [![Build Status](https://travis-ci.org/scullxbones/spray-akka-todomvc.png)](https://travis-ci.org/scullxbones/spray-akka-todomvc)
+
   * Almost a full Typesafe Stack (http://typesafe.com/stack).  Opted for Spray (http://spray.io) instead of Play (http://playframework.com).
   * Runs on spray-can for server
   * Built originally by giter8 template for akka 2.1.0 using Scala and SBT.
