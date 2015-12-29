@@ -1,0 +1,27 @@
+app:
+  restart: "always"
+  image: spray-akka-todomvcs:0.2-SNAPSHOT
+  ports:
+    - "8080:8080"
+  links:
+    - postgres:postgres
+  environment:
+    - DATABASE_URL=jdbc:postgresql://postgres/todomvc?user=todomvc&password=todomvc
+
+data:
+  restart: "no"
+  image: postgres:latest
+  volumes:
+    - /var/lib/postgresql
+  command: "/bin/true"
+
+postgres:
+  restart: "always"
+  image: postgres:latest
+  volumes_from:
+    - data
+  expose:
+    - "5432"
+  environment:
+    - POSTGRES_USER=todomvc
+    - POSTGRES_PASSWORD=todomvc
