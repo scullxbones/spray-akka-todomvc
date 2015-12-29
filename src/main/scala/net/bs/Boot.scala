@@ -1,58 +1,67 @@
 package net.bs
 
-import akka.actor.Props
-import spray.can.server.SprayCanHttpServerApp
-import scala.slick.session.Database
-import java.net.URI
-import net.bs.models.TodoRepository
-import net.bs.models.TodoRepositoryActor
-import scala.slick.driver.ExtendedProfile
-import scala.slick.driver.PostgresDriver
-import scala.slick.driver.H2Driver
-import scala.slick.session.Session
+import java.util.concurrent.Executors
 
-object Boot extends App with SprayCanHttpServerApp {
-  
-  val host = "0.0.0.0"
+import akka.actor.ActorSystem
+import akka.http.scaladsl.Http
+import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.Sink
+import com.typesafe.config.ConfigFactory
+import net.bs.models.TodoRepository
+import slick.jdbc.JdbcBackend
+
+import scala.concurrent.duration._
+import scala.concurrent.{Promise, Await, ExecutionContext}
+import scala.io.StdIn
+
+object Boot extends App with TodoService {
+
+  val config = ConfigFactory.load()
+
+  val host = config.getString("host")
     
-  val port = Option(System.getenv("PORT")).getOrElse("8080").toInt
+  val port = config.getInt("port")
   
-  implicit val (db :Database,driver: ExtendedProfile) = Option(System.getenv("DATABASE_URL")) match {
-    case Some(url) => {
-	    val dbUri = new URI(url)
-	
-	    dbUri.getUserInfo().split(":") match {
-	      case Array(user,pass) => {
-	        val urlStr = "jdbc:postgresql://%s:%s%s".format(dbUri.getHost(),dbUri.getPort(),dbUri.getPath())
-	        (Database.forURL(urlStr, driver = "org.postgresql.Driver", user = user, password = pass), PostgresDriver)
-	      }
-	      case _ => throw new IllegalArgumentException("Unrecognized url (too many colons): "+url)
-	    }
-    }
-    case None => {
-      (Database.forURL("jdbc:h2:mem:test1;DB_CLOSE_DELAY=-1", driver = "org.h2.Driver"), H2Driver)
-    }
-  }
+  implicit val system = ActorSystem("akka-http-todomvc")
+
+  implicit val materializer = ActorMaterializer()
+
+  implicit val ec = system.dispatcher
+
+  val db = JdbcBackend.Database.forConfig("tododb")
+  val dbEc = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(10))
 
   // create repo
-  val repo = new TodoRepository(driver)
-  driver match {
-    case _: H2Driver => {
-	  db.withSession { implicit session: Session =>
-	  	repo.create
-	  }
-    }
-    case _ => 
+  lazy val repository = new TodoRepository(db)(dbEc)
+  val schema = repository.createSchemaIfNotExists
+  schema.onFailure {
+    case x =>
+      println("Failed to create schema against empty database")
+      x.printStackTrace()
   }
-  
-  // create child repo actor
-  val repoActor = system.actorOf(Props(new TodoRepositoryActor(repo)),"todo-repository")
-  
-  // create and start our service actor
-  val service = system.actorOf(Props(new TodoServiceActor(repoActor)), "todo-service")
-  
+
   // create a new HttpServer using our handler and tell it where to bind to
-  newHttpServer(service) ! Bind(interface = host, port = port)
+  val handler = for {
+    _ <- schema
+    h <- Http().bindAndHandle(routes, interface = host, port = port)
+  } yield h
+  println(s"HTTP server bound to host $host and port $port.")
+
+  sys.addShutdownHook({
+    db.close()
+    val fut = for {
+      bound <- handler
+      _ <- bound.unbind()
+      terminated <- system.terminate()
+    } yield terminated
+
+    Await.result(fut, 3.seconds)
+    ()
+  })
+
+  val neverFulfilled = Promise[Unit]().future
+  Await.result(neverFulfilled, Duration.Inf)
+
 }
 
 

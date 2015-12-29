@@ -1,65 +1,82 @@
 package net.bs.models
 
-import scala.slick.driver.{ExtendedProfile,H2Driver,PostgresDriver}
 import java.util.UUID
 
-trait Profile {
-  val profile: ExtendedProfile
+import slick.backend.DatabasePublisher
+import slick.driver.PostgresDriver.api._
+import slick.jdbc.JdbcBackend
+import slick.jdbc.meta.MTable
+import slick.lifted.{ProvenShape, Tag}
+
+import scala.concurrent.{ExecutionContext, Future}
+
+case class Todo(var id: Option[String] = None, title: String, completed: Boolean) {
+  this.id = Some(id.getOrElse(UUID.randomUUID().toString.replaceAll("-","")))
 }
 
-sealed trait Domain
+class Todos(tag: Tag) extends Table[Todo](tag, "todos") {
+  def id = column[String]("id", O.PrimaryKey)
+  def title = column[String]("title")
+  def completed = column[Boolean]("completed")
 
-case class Todo(var id: Option[String] = None, title: String, completed: Boolean) extends Domain {
-  this.id = Some(id.getOrElse(UUID.randomUUID().toString().replaceAll("-","")))
+  def * : ProvenShape[Todo] =
+    (id, title, completed) <> (mapRow, unMapRow)
+
+  private def mapRow(tuple: (String,String,Boolean)) = tuple match {
+    case (id, title, completed) => Todo(Option(id), title, completed)
+  }
+
+  private def unMapRow(todo: Todo): Option[(String,String,Boolean)] =
+    todo.id.map(i => (i,todo.title,todo.completed))
 }
 
-trait TodoComponent { this: Profile =>
-  import profile.simple._
-  
-	object Todos extends Table[Todo]("todos") {
-	  def id = column[String]("id", O.PrimaryKey)
-	  def title = column[String]("title")
-	  def completed = column[Boolean]("completed")
-	  def * = id.? ~ title ~ completed <> (Todo, Todo.unapply _)
-	}
-  
-  def show(id: String)(implicit session: Session): Option[Todo] = {
-    val q = Query(Todos).filter(_.id === id)
-    q.firstOption()
-  }
-  
-  def update(todo: Todo)(implicit session: Session) = {
-    val q = for {
-      t <- Todos if t.id === todo.id.get
-    } yield (t.title ~ t.completed)
-    q.update(todo.title,todo.completed)
-  }
-  
-  def delete(id: String)(implicit session: Session) = {
-    val q = Query(Todos).filter(_.id === id)
-    q.delete
-  }
-  
-  def list()(implicit session: Session): List[Todo] = {
-    val q = Query(Todos)
-    q.list()
-  }
-  
-  def create(todo: Todo)(implicit session: Session): Either[String,Todo] = {
-    val q = Query(Todos).filter(_.id === todo.id.get)
-    q.firstOption match {
-      case None => Todos.insert(todo); Right(todo)
-      case Some(existing) => Left(existing.id.get)
-    }
-  } 
-  
-}
+class TodoRepository(database: JdbcBackend.DatabaseDef)(implicit ec: ExecutionContext) {
 
-
-class TodoRepository(override val profile: ExtendedProfile) extends TodoComponent with Profile {
-  import profile.simple._
+  val todos = TableQuery[Todos]
   
-  def create(implicit session: Session) = {
-    Todos.ddl.create
+  def show(id: String): Future[Option[Todo]] = {
+    val q = todos.filter(_.id === id).result.headOption
+    database.run(q)
+  }
+  
+  def update(todo: Todo): Future[Int] = {
+    val q = (for {
+      t <- todos if t.id === todo.id.get
+    } yield (t.title, t.completed)).update(todo.title,todo.completed)
+    database.run(q.transactionally)
+  }
+  
+  def delete(id: String): Future[Int] = {
+    val q = todos.filter(_.id === id).delete
+    database.run(q.transactionally)
+  }
+  
+  def list(): DatabasePublisher[Todo] = {
+    val q = (for {
+      t <- todos
+    } yield t).result
+    database.stream(q)
+  }
+  
+  def insert(todo: Todo): Future[Either[String, Todo]] = {
+    val q = todos.filter(_.id === todo.id.get).result.headOption.flatMap {
+      case Some(td) =>
+        DBIO.successful(Left(td.id.get))
+      case None =>
+        (todos += todo).andThen(
+          DBIO.successful(Right(todo))
+        )
+    }.transactionally
+    database.run(q)
+  }
+
+  def createSchemaIfNotExists: Future[Unit] = {
+    for {
+      tables <- database.run(MTable.getTables)
+      _ <- {
+        if (tables.exists(_.name.name == "todos")) Future.successful(())
+        else database.run(todos.schema.create)
+      }
+    } yield ()
   }
 }
