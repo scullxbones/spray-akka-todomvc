@@ -1,27 +1,32 @@
-Demo Backbone.js TODO MVC application backed by RESTful Spray/Akka/Slick stack.
+### Demo Backbone.js TODO MVC application 
+<sub><sup>... backed by RESTful Akka-Http/Slick stack</sup></sub>
 
 Travis CI says: [![Build Status](https://travis-ci.org/scullxbones/spray-akka-todomvc.png?branch=master)](https://travis-ci.org/scullxbones/spray-akka-todomvc)
 
-  * Almost a full Typesafe Stack (http://typesafe.com/stack).  Opted for Spray (http://spray.io) instead of Play (http://playframework.com).
-  * Runs on spray-can for server
-  * Built originally by giter8 template for akka 2.1.0 using Scala and SBT.
-  * Supports in-memory H2 in dev mode or PGSQL in cloud mode
-  * Uses bulkhead actor for database I/O
-  * Fully asynchronous restful services
-  * Packaged for deployment to heroku using sbt start-script plugin
+  * Stack based on backbone.js, akka-http, and slick
+  * Supports PostgreSQL as a database
+  * Uses bulkhead execution context for database I/O
+  * Fully asynchronous restful services supporting simple todo mvc app
+  * Packaged for docker container deployments using `sbt-native-packager`
+  * Adds a docker-compose template to run locally including postgresql
 
-To run and test it using SBT invoke: 'sbt run'
+If you already have postgres running, you can run and test it using SBT invoke: 'sbt run'
+
+If not, or you'd like to try a container, you can stage a container and then use docker-compose to start it up:
+
+```
+$ sbt docker:publishLocal
+$ docker-compose up
+```
 
 Future work:
-  * Fix POST where id already exists - should be 303 See Other
-  * Add travis CI
-  * Convert to multi-tenant
-  * Integrate with app direct APIs (http://www.appdirect.com/)
-
+  * Convert to multi-tenant?
+  * Live websocket-based updates?
+  * Find a better way to stream results without `runFold`ing
 
 Licensed Apache Public License V2
 
-   Copyright 2013 Brian Scully
+   Copyright 2013-2016 Brian Scully
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
